@@ -2,6 +2,7 @@
 
 
     void LifeGame::step() {
+        ++gen;
         std::vector<uint8_t> nextCells(width*height,0);
         for (int y = 0; y < height; ++y) {
             for (int x = 0; x < width; ++x) {

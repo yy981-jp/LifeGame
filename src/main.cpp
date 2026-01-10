@@ -15,13 +15,15 @@
 Game* game;
 
 namespace param {
-	int fpsDelayMS = 1000 / 60; // 60fps
+	int FPS = 60,
+		fpsDelayMS = 1000 / FPS;
 }
 
 struct carg {
 	int windowWidth = 860,
 		windowHeight = 600,
-		scale = 10;			// scale:1 = window*:cellIdxSize_*
+		scale = 10,			// scale:1 = window*:cellIdxSize_*
+		prob = 4;
 };
 
 void eventloop() {
@@ -30,7 +32,24 @@ void eventloop() {
 	while (!quit) {
 		game->update();
 		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) quit = true;
+			switch (event.type) {
+			case SDL_QUIT:
+				quit = true;
+				break;
+
+			case SDL_MOUSEBUTTONDOWN:
+				game->onMouseButton(event.button);
+				break;
+
+			case SDL_KEYDOWN:
+				game->onKey(event.key);
+				break;
+			
+			case SDL_MOUSEWHEEL:
+				game->onMouseWheel(event.wheel);
+			}
+
+
 		}
 		sleepc(tu::l, param::fpsDelayMS);
 	}
@@ -49,11 +68,16 @@ carg parseCLIArg(const std::vector<std::string>& arg) {
 			case 'w': result.windowWidth = std::stoi(p.substr(2)); break;
 			case 'h': result.windowHeight = std::stoi(p.substr(2)); break;
 			case 's': result.scale = std::stoi(p.substr(2)); break;
-			case 'f': param::fpsDelayMS = 1000 / std::stoi(p.substr(2)); break;
+			case 'r': result.prob = std::stoi(p.substr(2)); break;
+			case 'f': { 
+				param::FPS = std::stoi(p.substr(2));
+				param::fpsDelayMS = 1000 / param::FPS;
+			} break;
 			default: throw std::runtime_error("引数エラー [" + std::string{p[1]} + "]");
 		}
 	}
 	if (result.scale < 1) throw std::runtime_error("scale < 1");
+	if (result.prob <= 0) throw std::runtime_error("prob <= 0");
 /*	if (result.windowHeight % result.scale || result.windowWidth % result.scale)
 		throw std::runtime_error("result.windowHeight % result.scale == 0 or result.windowWidth % result.scale == 0");*/
 	return result;
@@ -63,7 +87,7 @@ int main(int argc, char* argv[]) {
 	if (SDL_Init(SDL_INIT_VIDEO)) throw std::runtime_error(std::string("SDL_Init failed: ") + SDL_GetError());
 
 	carg prm = parseCLIArg(st::charV(argc,argv));
-	game = new Game(prm.windowWidth,prm.windowHeight,prm.scale);
+	game = new Game(prm.windowWidth,prm.windowHeight,prm.scale,prm.prob);
 
 	eventloop();
 

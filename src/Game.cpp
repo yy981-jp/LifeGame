@@ -3,9 +3,9 @@
 
 #include "Game.h"
 
-    Game::Game(int windowWidth, int windowHeight, int scale):
+    Game::Game(int windowWidth, int windowHeight, int scale, int prob):
       windowWidth(windowWidth), windowHeight(windowHeight), cellIdxSize_x(windowWidth/scale), cellIdxSize_y(windowHeight/scale),
-      life(cellIdxSize_x,cellIdxSize_y) {
+      life(cellIdxSize_x,cellIdxSize_y,prob) {
         window = SDL_CreateWindow(
             "LifeGame",
             SDL_WINDOWPOS_CENTERED,
@@ -40,6 +40,8 @@
         // 背景クリア（黒）
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
+
+        updateWindowTitle();
     }
 
     Game::~Game() {
@@ -53,7 +55,7 @@
         int pitch;
         SDL_LockTexture(texture, nullptr, (void**)&pixels, &pitch);
 
-        life.step();
+        if (life.running) life.step();
         const std::vector<uint8_t>& cells = life.data();
 
         for (int y = 0; y < cellIdxSize_y; ++y) {
