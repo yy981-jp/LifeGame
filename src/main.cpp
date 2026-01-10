@@ -1,6 +1,8 @@
 #define SDL_MAIN_HANDLED
 
 #include <thread>
+#include <string>
+#include <stdexcept>
 
 #include <SDL2/SDL.h>
 
@@ -29,7 +31,7 @@ void eventloop() {
 }
 
 int main(int argc, char* argv[]) {
-	SDL_Init(SDL_INIT_VIDEO);
+	if (SDL_Init(SDL_INIT_VIDEO)) throw std::runtime_error(std::string("SDL_Init failed: %s\n") + SDL_GetError());
 	game = new Game;
 
 	eventloop();
