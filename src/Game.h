@@ -5,8 +5,6 @@
 #include "LifeGame.h" 
 
 class Game {
-    LifeGame life;
-
     int windowWidth,
 		windowHeight,
         cellIdxSize_y, // y方向のcell数
@@ -19,9 +17,11 @@ class Game {
     SDL_Renderer* renderer;
     SDL_Texture* texture;
 
+    LifeGame life;
+
 
 public:
-    Game(int windowWidth = 800, int windowHeight = 600, int cellIdxSize_x = 80, int cellIdxSize_y = 60);
+    Game(int windowWidth = 800, int windowHeight = 600, int scale = 10);
     ~Game();
     void update();
 };

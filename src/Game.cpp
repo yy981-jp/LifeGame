@@ -3,8 +3,9 @@
 
 #include "Game.h"
 
-    Game::Game(int windowWidth, int windowHeight, int cellIdxSize_x, int cellIdxSize_y):
-      windowWidth(windowWidth), windowHeight(windowHeight), cellIdxSize_x(cellIdxSize_x), cellIdxSize_y(cellIdxSize_y), life(cellIdxSize_x,cellIdxSize_y) {
+    Game::Game(int windowWidth, int windowHeight, int scale):
+      windowWidth(windowWidth), windowHeight(windowHeight), cellIdxSize_x(windowWidth/scale), cellIdxSize_y(windowHeight/scale),
+      life(cellIdxSize_x,cellIdxSize_y) {
         window = SDL_CreateWindow(
             "LifeGame",
             SDL_WINDOWPOS_CENTERED,
@@ -13,14 +14,14 @@
             windowHeight,
             SDL_WINDOW_SHOWN
         );
-        if (!window) throw std::runtime_error(std::string("SDL_CreateWindow failed: %s\n") + SDL_GetError());
+        if (!window) throw std::runtime_error(std::string("SDL_CreateWindow failed: ") + SDL_GetError());
 
         renderer = SDL_CreateRenderer(
             window,
             -1,
             SDL_RENDERER_ACCELERATED
         );
-        if (!renderer) throw std::runtime_error(std::string("SDL_CreateRenderer failed: %s\n") + SDL_GetError());
+        if (!renderer) throw std::runtime_error(std::string("SDL_CreateRenderer failed: ") + SDL_GetError());
 
 
         texture = SDL_CreateTexture(
@@ -30,7 +31,7 @@
             cellIdxSize_x,
             cellIdxSize_y
         );
-        if (!texture) throw std::runtime_error(std::string("SDL_CreateTexture failed: %s\n") + SDL_GetError());
+        if (!texture) throw std::runtime_error(std::string("SDL_CreateTexture failed: ") + SDL_GetError());
 
 
         // 論理サイズ
