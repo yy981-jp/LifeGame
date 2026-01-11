@@ -41,6 +41,11 @@
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
+        // カーソル描画用
+        SDL_ShowCursor(SDL_DISABLE);
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderDrawColor(renderer, 0, 160, 255, 127);
+
         updateWindowTitle();
     }
 
@@ -67,5 +72,51 @@
 
         SDL_UnlockTexture(texture);
         SDL_RenderCopy(renderer, texture, nullptr, nullptr);
+
+        if (mouseCursorPos_x >= 0 && mouseCursorPos_x < life.width
+          && mouseCursorPos_y >= 0 && mouseCursorPos_y < life.height) {
+            SDL_RenderDrawPoint(renderer, mouseCursorPos_x, mouseCursorPos_y);
+        }
+
         SDL_RenderPresent(renderer);
+    }
+
+    void Game::onKey(const SDL_KeyboardEvent& e) {
+        switch (e.keysym.sym) {
+            case SDLK_SPACE: {
+                if (!e.repeat) {
+                    life.running = !life.running;
+                    updateWindowTitle();
+                }
+            } break;
+            case SDLK_c: {
+                life.clear();
+            } break;
+            case SDLK_r: life.fillRandom(); break;
+            case SDLK_t: updateWindowTitle(); break;
+            case SDLK_LSHIFT: key_md_shift = true; break;
+            case SDLK_LCTRL: key_md_ctrl = true; break;
+            case SDLK_RETURN: life.toggle(mouseCursorPos_x, mouseCursorPos_y); break;
+
+            case SDLK_UP: {
+                if (key_md_ctrl||key_md_shift) scrollFPS(true);
+                    else mouseMove_y = -1;
+            } break;
+            case SDLK_DOWN: {
+                if (key_md_ctrl||key_md_shift) scrollFPS(false);
+                    else mouseMove_y = 1;
+            } break;
+            case SDLK_LEFT: mouseMove_x = -1; break;
+            case SDLK_RIGHT: mouseMove_x = 1; break;
+            default: return;
+        }
+    }
+
+    void Game::onKeyUP(const SDL_KeyboardEvent& e) {
+        switch (e.keysym.sym) {
+            case SDLK_LSHIFT: key_md_shift = false; break;
+            case SDLK_LCTRL: key_md_ctrl = false; break;
+            case SDLK_UP: case SDLK_DOWN: mouseMove_y = 0; break;
+            case SDLK_LEFT: case SDLK_RIGHT: mouseMove_x = 0; break;
+        }
     }

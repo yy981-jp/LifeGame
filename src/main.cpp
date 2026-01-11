@@ -31,6 +31,7 @@ void eventloop() {
 	bool quit = false;
 	while (!quit) {
 		game->update();
+		game->updateCursor();
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT:
@@ -44,12 +45,18 @@ void eventloop() {
 			case SDL_KEYDOWN:
 				game->onKey(event.key);
 				break;
+
+			case SDL_KEYUP:
+				game->onKeyUP(event.key);
+				break;
 			
 			case SDL_MOUSEWHEEL:
 				game->onMouseWheel(event.wheel);
+				break;
+			case SDL_MOUSEMOTION:
+				game->onMouseMotion(event.motion);
+				break;
 			}
-
-
 		}
 		sleepc(tu::l, param::fpsDelayMS);
 	}

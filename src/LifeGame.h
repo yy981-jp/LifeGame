@@ -41,16 +41,21 @@ public:
         cells[flater(x,y)] = value;
     }
 
+    void toggle(int x, int y) {
+        int index = flater(x,y);
+        cells[index] = !cells[index];
+    }
+
     void fillRandom() {
         for (int y = 1; y < height-1; ++y)
             for (int x = 1; x < width-1; ++x)
                 cells[flater(x,y)] = !randomNum(0, prob-1);
     }
 
-    bool scrollFPS(bool dire) { // true -> up, false -> down
+    bool scrollFPS(bool dire, bool upSpeed = false) { // dire: true -> up, false -> down
         int nextFPS = -1;
-        if (dire) nextFPS = param::FPS + 1;
-            else nextFPS = param::FPS - 1;
+        if (dire) nextFPS = param::FPS + (upSpeed? 100: 1);
+            else nextFPS = param::FPS - (upSpeed? 100: 1);
         if (nextFPS < 1 || nextFPS > 1001) return false;
         param::FPS = nextFPS;
         param::fpsDelayMS = 1000 / nextFPS;
