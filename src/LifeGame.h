@@ -64,7 +64,7 @@ public:
         int nextFPS = -1;
         if (dire) nextFPS = param::FPS + (upSpeed? 100: 1);
             else nextFPS = param::FPS - (upSpeed? 100: 1);
-        if (nextFPS < 1 || nextFPS > 1001) return false;
+        if (nextFPS < 1 || nextFPS > 1100) return false;
         param::FPS = nextFPS;
         param::fpsDelayMS = 1000 / nextFPS;
         return true;

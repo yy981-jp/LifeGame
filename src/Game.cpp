@@ -75,15 +75,18 @@
 
         if (mouseCursorPos_x >= 0 && mouseCursorPos_x < life.width
           && mouseCursorPos_y >= 0 && mouseCursorPos_y < life.height) {
-            if (!settingStructure) SDL_RenderDrawPoint(renderer, mouseCursorPos_x, mouseCursorPos_y);
+            if (!LGSMode) SDL_RenderDrawPoint(renderer, mouseCursorPos_x, mouseCursorPos_y);
             else {
-                SDL_Rect dst {
-                    mouseCursorPos_x,
-                    mouseCursorPos_y,
-                    structureWidth,
-                    structureHeight
-                };
-                SDL_RenderCopy(renderer, structureTexture, nullptr, &dst);
+                if (mouseCursorPos_x < life.width - structureWidth
+                    && mouseCursorPos_y < life.height - structureHeight) {
+                        SDL_Rect dst {
+                            mouseCursorPos_x,
+                            mouseCursorPos_y,
+                            structureWidth,
+                            structureHeight
+                        };
+                        SDL_RenderCopy(renderer, structureTexture, nullptr, &dst);
+                }
             }
         }
 
@@ -104,9 +107,14 @@
             case SDLK_LSHIFT: key_md_shift = true; break;
             case SDLK_LCTRL: key_md_ctrl = true; break;
             case SDLK_RETURN: life.toggle(mouseCursorPos_x, mouseCursorPos_y); break;
-            case SDLK_o: if (key_md_ctrl) openFile(); break;
             case SDLK_s: if (key_md_ctrl) saveJson(); break;
-            case SDLK_x: case SDLK_ESCAPE: if (settingStructure) settingStructure = false; break;
+            case SDLK_x: case SDLK_ESCAPE: if (LGSMode) setLGSMode(false); break;
+            case SDLK_o: {
+                if (key_md_ctrl) openFile();
+                else {
+                    if (!structure.empty()) setLGSMode(true);
+                }
+            } break;
 
             case SDLK_UP: {
                 if (key_md_ctrl||key_md_shift) scrollFPS(true);
@@ -199,5 +207,5 @@
             }
         }
         SDL_UnlockTexture(structureTexture);
-        settingStructure = true;
+        setLGSMode(true);
     }

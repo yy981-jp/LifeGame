@@ -25,8 +25,8 @@ std::string openFileDialog() {
 	ofn.lpstrFile = fileName;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrFilter = 
-        L"LGS(部分構造) Files (*.lgs)\0*.lgs\0\0"
-        L"JSON(全体構造) Files (*.json)\0*.json\0\0"
+        L"LGS(部分構造) Files (*.lgs)\0*.lgs\0"
+        L"JSON(全体構造) Files (*.json)\0*.json\0"
         L"JSON(全体構造) / LGS(部分構造) Files (*.json;*.lgs)\0*.json;*.lgs\0\0";
 	ofn.nFilterIndex = 1;
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;

@@ -27,7 +27,7 @@ class Game {
     SDL_Texture* texture;
 
     std::vector<std::vector<uint8_t>> structure;
-    bool settingStructure = false;
+    bool LGSMode = false;
     SDL_Texture* structureTexture = nullptr;
 
     LifeGame life;
@@ -40,12 +40,18 @@ class Game {
         std::string text = 
             "LifeGame: " + std::to_string(param::FPS) + "FPS" + ((param::FPS>1000)? "(無限)": "") + ", " 
             + std::to_string(life.gen) + "世代 " 
-            + (life.running? "実行中": "停止中");
+            + (life.running? "実行中": "停止中")
+            + (LGSMode? " LGS実行中":"");
         SDL_SetWindowTitle(window,text.c_str());
     }
 
     void scrollFPS(bool dire) {
         if (life.scrollFPS(dire,key_md_shift)) updateWindowTitle();
+    }
+
+    void setLGSMode(bool mode) {
+        LGSMode = mode;
+        updateWindowTitle();
     }
 
 public:
@@ -63,7 +69,7 @@ public:
 
 
     void onMouseButton(const SDL_MouseButtonEvent& e) {
-    	if (!settingStructure) {
+    	if (!LGSMode) {
             if (e.button == SDL_BUTTON_LEFT) life.toggle(e.x, e.y, true);
             else if (e.button == SDL_BUTTON_RIGHT) life.toggle(e.x, e.y, false);
         } else {
@@ -72,7 +78,7 @@ public:
                     life.toggle(mouseCursorPos_x+x, mouseCursorPos_y+y,structure[y][x]);
                 }
             }
-            settingStructure = false;
+            setLGSMode(false);
         }
     }
 
