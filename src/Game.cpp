@@ -75,7 +75,16 @@
 
         if (mouseCursorPos_x >= 0 && mouseCursorPos_x < life.width
           && mouseCursorPos_y >= 0 && mouseCursorPos_y < life.height) {
-            SDL_RenderDrawPoint(renderer, mouseCursorPos_x, mouseCursorPos_y);
+            if (!settingStructure) SDL_RenderDrawPoint(renderer, mouseCursorPos_x, mouseCursorPos_y);
+            else {
+                SDL_Rect dst {
+                    mouseCursorPos_x,
+                    mouseCursorPos_y,
+                    structureWidth,
+                    structureHeight
+                };
+                SDL_RenderCopy(renderer, structureTexture, nullptr, &dst);
+            }
         }
 
         SDL_RenderPresent(renderer);
@@ -89,14 +98,15 @@
                     updateWindowTitle();
                 }
             } break;
-            case SDLK_c: {
-                life.clear();
-            } break;
+            case SDLK_c: life.clear(); break;
             case SDLK_r: life.fillRandom(); break;
             case SDLK_t: updateWindowTitle(); break;
             case SDLK_LSHIFT: key_md_shift = true; break;
             case SDLK_LCTRL: key_md_ctrl = true; break;
             case SDLK_RETURN: life.toggle(mouseCursorPos_x, mouseCursorPos_y); break;
+            case SDLK_o: if (key_md_ctrl) openFile(); break;
+            case SDLK_s: if (key_md_ctrl) saveJson(); break;
+            case SDLK_x: case SDLK_ESCAPE: if (settingStructure) settingStructure = false; break;
 
             case SDLK_UP: {
                 if (key_md_ctrl||key_md_shift) scrollFPS(true);
@@ -119,4 +129,75 @@
             case SDLK_UP: case SDLK_DOWN: mouseMove_y = 0; break;
             case SDLK_LEFT: case SDLK_RIGHT: mouseMove_x = 0; break;
         }
+    }
+
+    json Game::generateJson() {
+        json j;
+        j["type"] = "LifeGame-yy981";
+        j["version"] = 1;
+        j["LifeGame"]["width"] = life.width;
+        j["LifeGame"]["height"] = life.height;
+        j["LifeGame"]["prob"] = life.prob;
+        j["LifeGame"]["gen"] = life.gen;
+        j["LifeGame"]["map"] = life.data();
+        j["Game"]["windowWidth"] = windowWidth;
+        j["Game"]["windowHeight"] = windowHeight;
+        return j;
+    }
+
+    void Game::parseJson(const json& j) {
+        if (j.at("type").get<std::string>() != "LifeGame-yy981") {
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"読み込んだJsonの致命的な問題","Game::parseJson: j.type",window);
+            return;
+        }
+        json lifegameJsonData = j.at("LifeGame");
+        if (lifegameJsonData.at("width").get<int>() != life.width) {
+            std::string text = "widthの値が一致しません\njson.width: " + std::to_string(lifegameJsonData.at("width").get<int>())
+                                + "\nLifeGame.width: " + std::to_string(life.width);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"Width不一致",text.c_str(),window);
+            return;
+        }
+        if (lifegameJsonData.at("height").get<int>() != life.height) {
+            std::string text = "heightの値が一致しません\njson.height: " + std::to_string(lifegameJsonData.at("height").get<int>())
+                                + "\nLifeGame.height: " + std::to_string(life.height);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"height不一致",text.c_str(),window);
+            return;
+        }
+        
+        life.running = false;
+        life.prob = lifegameJsonData.at("prob").get<int>();
+        life.gen = lifegameJsonData.at("gen").get<int>();
+        life.setCells(lifegameJsonData.at("map"));
+        updateWindowTitle(); 
+    }
+
+    void Game::configureLGStructure() {
+        SDL_DestroyTexture(structureTexture);
+        structureTexture = nullptr;
+
+        structureWidth = structure[0].size();
+        structureHeight = structure.size();
+        structureTexture = SDL_CreateTexture(
+            renderer,
+            SDL_PIXELFORMAT_ARGB8888,
+            SDL_TEXTUREACCESS_STREAMING,
+            structureWidth,
+            structureHeight
+        );
+        if (!structureTexture) throw std::runtime_error(std::string("Game::configureLGStructure(): structureTexture failed") + SDL_GetError());
+        SDL_SetTextureBlendMode(structureTexture, SDL_BLENDMODE_BLEND);
+
+        uint32_t* pixels;
+        int pitch;
+        SDL_LockTexture(structureTexture, nullptr, (void**)&pixels, &pitch);
+        for (int y = 0; y < structureHeight; ++y) {
+            uint8_t* row = (uint8_t*)pixels + y * pitch;
+            uint32_t* pixelRow = (uint32_t*)row;
+            for (int x = 0; x < structureWidth; ++x) {
+                if (structure[y][x]) pixelRow[x] = 0xAFFF0000; // 存在
+                    else pixelRow[x] = 0xAF0000FF; // 空白
+            }
+        }
+        SDL_UnlockTexture(structureTexture);
+        settingStructure = true;
     }

@@ -4,7 +4,9 @@
 
 #include <string>
 
-#include "LifeGame.h" 
+#include "def.h"
+#include "LifeGame.h"
+#include "fsutil.h"
 
 class Game {
     int windowWidth,
@@ -14,13 +16,19 @@ class Game {
         mouseCursorPos_x,
         mouseCursorPos_y,
         mouseMove_x,
-        mouseMove_y;
+        mouseMove_y,
+        structureWidth,
+        structureHeight;
     uint32_t ARGB_white = 0xFFFFFFFF,
              ARGB_black = 0xFF000000;
     
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* texture;
+
+    std::vector<std::vector<uint8_t>> structure;
+    bool settingStructure = false;
+    SDL_Texture* structureTexture = nullptr;
 
     LifeGame life;
 
@@ -55,8 +63,17 @@ public:
 
 
     void onMouseButton(const SDL_MouseButtonEvent& e) {
-    	if (e.button == SDL_BUTTON_LEFT) life.toggle(e.x, e.y, true);
-        else if (e.button == SDL_BUTTON_RIGHT) life.toggle(e.x, e.y, false);
+    	if (!settingStructure) {
+            if (e.button == SDL_BUTTON_LEFT) life.toggle(e.x, e.y, true);
+            else if (e.button == SDL_BUTTON_RIGHT) life.toggle(e.x, e.y, false);
+        } else {
+            for (int y = 0; y < structureHeight; ++y) {
+                for (int x = 0; x < structureWidth; ++x) {
+                    life.toggle(mouseCursorPos_x+x, mouseCursorPos_y+y,structure[y][x]);
+                }
+            }
+            settingStructure = false;
+        }
     }
 
     void onKey(const SDL_KeyboardEvent& e);
@@ -71,4 +88,35 @@ public:
         mouseCursorPos_x = e.x;
         mouseCursorPos_y = e.y;
     }
+
+    json generateJson();
+    void parseJson(const json& j);
+
+    void openFile() {
+        std::string path = openFileDialog();
+        if (path.empty()) return;
+        if (path.ends_with(".json")) loadJson(path);
+        else if (path.ends_with(".lgs")) loadLGS(path);
+        else throw std::runtime_error("Game::openFile(): not json lgs");
+    }
+
+    void saveJson() {
+        json j = generateJson();
+        std::string path = saveFileDialog();
+        if (path.empty()) return;
+        writeJsonFile(j,path);
+    }
+
+    void loadJson(std::string path) {
+        json j = readJsonFile(path);
+        parseJson(j);
+    }
+
+    void configureLGStructure();
+
+    void loadLGS(std::string path) {
+        structure = std::move(readLGSFile(path));
+        configureLGStructure();
+    }
+
 };

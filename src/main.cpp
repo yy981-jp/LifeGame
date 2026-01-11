@@ -20,9 +20,9 @@ namespace param {
 }
 
 struct carg {
-	int windowWidth = 860,
-		windowHeight = 600,
-		scale = 10,			// scale:1 = window*:cellIdxSize_*
+	int windowWidth = 1500,
+		windowHeight = 900,
+		scale = 5,			// scale:1 = window*:cellIdxSize_*
 		prob = 4;
 };
 

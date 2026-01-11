@@ -29,6 +29,14 @@ public:
     const std::vector<uint8_t>& data() const {
         return cells;
     }
+/*
+    std::vector<uint8_t>& getHandle() {
+        return cells;
+    }
+*/
+    void setCells(const std::vector<uint8_t>& input) {
+        cells = std::move(input);
+    }
 
     void clear() {
         cells.clear();
