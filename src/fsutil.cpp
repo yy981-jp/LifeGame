@@ -1,11 +1,15 @@
 #include <string>
 #include <fstream>
+#include <filesystem>
+
 #include <windows.h>
 #include <commdlg.h>
 
 #include <boost/locale.hpp>
 
 #include "def.h"
+
+namespace fs = std::filesystem;
 
 
 inline std::wstring to_wstring(const std::string& u8) {
@@ -54,14 +58,14 @@ std::string saveFileDialog() {
 }
 
 void writeJsonFile(const json& j, const std::string& path) {
-	std::ofstream ofs(path);
+	std::ofstream ofs(fs::path(to_wstring(path)));
 	if (!ofs) throw std::runtime_error("writeJsonFile(): ofs");
 	ofs << j;
 }
 
 json readJsonFile(const std::string& path) {
 	json j;
-	std::ifstream ifs(path);
+	std::ifstream ifs(fs::path(to_wstring(path)));
 	if (!ifs) throw std::runtime_error("readJsonFile(): ifs");
 	ifs >> j;
 	return j;
@@ -69,7 +73,7 @@ json readJsonFile(const std::string& path) {
 
 std::vector<std::vector<uint8_t>> readLGSFile(const std::string& path) {
 	std::vector<std::vector<uint8_t>> map;
-	std::ifstream ifs(path);
+	std::ifstream ifs(fs::path(to_wstring(path)));
 	if (!ifs) throw std::runtime_error("readLGSFile(): ifs");
 	std::string line;
 	int width = 0;
